@@ -29,11 +29,25 @@ android {
         versionName = flutter.versionName
     }
 
+    // Fixed app-owned signing key (android/app/debug.keystore, committed on
+    // purpose for this personal app) so every CI build shares one signature
+    // and new versions install over old ones without losing app data.
+    signingConfigs {
+        create("fixedDebug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("fixedDebug")
+        }
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Personal test builds: sign with the same fixed key.
+            signingConfig = signingConfigs.getByName("fixedDebug")
         }
     }
 }

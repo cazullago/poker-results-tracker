@@ -12,3 +12,6 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+# Exception: the app's fixed debug-signing key is committed on purpose so
+# every build shares one signature and updates keep app data.
+!app/debug.keystore

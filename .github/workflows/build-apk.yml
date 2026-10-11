@@ -45,17 +45,17 @@ jobs:
         run: flutter build apk --debug
 
       - name: Rename APK
-        run: cp build/app/outputs/flutter-apk/app-debug.apk PokerResults-v1.0.0-debug.apk
+        run: cp build/app/outputs/flutter-apk/app-debug.apk PokerResults-v1.1.0-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: PokerResults-v1.0.0-debug.apk
+          path: PokerResults-v1.1.0-debug.apk
           if-no-files-found: error
 
       - name: Publish release (tag builds only)
         if: startsWith(github.ref, 'refs/tags/')
-        run: gh release create "${GITHUB_REF#refs/tags/}" PokerResults-v1.0.0-debug.apk --title "Poker Results ${GITHUB_REF#refs/tags/}" --notes "Android test build (debug-signed). Download the APK and install it on an Android phone."
+        run: gh release create "${GITHUB_REF#refs/tags/}" PokerResults-v1.1.0-debug.apk --title "Poker Results ${GITHUB_REF#refs/tags/}" --notes "Android test build. New in v1.1: live sessions with timer/breaks/rebuys, Stats tab, bankroll tracking, monthly goal, BB stats, JSON backup. NOTE for v1.0 users: this build has a different signing key than v1.0, so export CSV in the old app first, uninstall it, install this, then Settings > Import sessions (CSV). Future updates install in place."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
