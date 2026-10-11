@@ -13,6 +13,10 @@ void main() {
 const List<String> gameTypes = ['NLHE', 'PLO', 'PLO5', 'Mixed'];
 const List<String> filterOptions = ['All', 'NLHE', 'PLO', 'PLO5', 'Mixed'];
 
+// Montreal Canadiens palette: wins are blue, losses are red.
+const habsBlue = Color(0xFF001F5B);
+const habsRed = Color(0xFFCE1141);
+
 // ---------- helpers ----------
 
 String formatMoney(double value, String currency) {
@@ -845,7 +849,7 @@ class _ChartPainter extends CustomPainter {
 
     if (values.isEmpty) {
       _drawText(canvas, 'No sessions yet', size.width / 2, size.height / 2,
-          const TextStyle(color: Colors.white54, fontSize: 14),
+          const TextStyle(color: Colors.black45, fontSize: 14),
           centered: true, centeredVertically: true);
       return;
     }
@@ -870,9 +874,9 @@ class _ChartPainter extends CustomPainter {
 
     // gridlines + y labels
     final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
+      ..color = Colors.black.withValues(alpha: 0.08)
       ..strokeWidth = 1;
-    const labelStyle = TextStyle(color: Colors.white54, fontSize: 10);
+    const labelStyle = TextStyle(color: Colors.black45, fontSize: 10);
     for (int g = 0; g <= 4; g++) {
       final v = minV + (maxV - minV) * g / 4;
       final yy = yAt(v);
@@ -884,7 +888,7 @@ class _ChartPainter extends CustomPainter {
     // zero line
     if (minV < 0 && maxV > 0) {
       final zeroPaint = Paint()
-        ..color = Colors.white.withValues(alpha: 0.25)
+        ..color = Colors.black.withValues(alpha: 0.25)
         ..strokeWidth = 1;
       canvas.drawLine(
           Offset(padL, yAt(0)), Offset(padL + w, yAt(0)), zeroPaint);
@@ -907,13 +911,13 @@ class _ChartPainter extends CustomPainter {
           rect,
           Paint()
             ..color = v >= 0
-                ? Colors.greenAccent.withValues(alpha: 0.85)
-                : Colors.redAccent.withValues(alpha: 0.85),
+                ? habsBlue.withValues(alpha: 0.85)
+                : habsRed.withValues(alpha: 0.85),
         );
       }
     } else {
       final lineColor =
-          values.last >= values.first ? Colors.greenAccent : Colors.redAccent;
+          values.last >= values.first ? habsBlue : habsRed;
       final path = Path();
       for (int i = 0; i < values.length; i++) {
         final pt = Offset(xAt(i), yAt(values[i]));
@@ -957,7 +961,7 @@ class _ChartPainter extends CustomPainter {
     }
 
     // x labels: first / middle / last
-    const xStyle = TextStyle(color: Colors.white38, fontSize: 9);
+    const xStyle = TextStyle(color: Colors.black38, fontSize: 9);
     if (labels.isNotEmpty) {
       _drawText(canvas, labels.first, xAt(0), padT + h + 6, xStyle);
       _drawText(canvas, labels.last, xAt(labels.length - 1), padT + h + 6,
@@ -1016,7 +1020,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final stats = computeStats(filtered);
     final currency = store.currency;
     final profitColor =
-        stats.totalProfit >= 0 ? Colors.greenAccent : Colors.redAccent;
+        stats.totalProfit >= 0 ? habsBlue : habsRed;
 
     // chart data per mode
     late final List<double> chartValues;
@@ -1050,7 +1054,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Text('Total profit',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Colors.white70, letterSpacing: 0.4)),
+                color: Colors.black54, letterSpacing: 0.4)),
         const SizedBox(height: 4),
         Text(
           formatMoney(stats.totalProfit, currency),
@@ -1063,19 +1067,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Text(
           '${stats.count} sessions · ${formatHours(stats.hours)} hours · '
           '${formatMoney(stats.hourly, currency)}/hr',
-          style: const TextStyle(color: Colors.white60),
+          style: const TextStyle(color: Colors.black54),
         ),
         if (store.bankrollConfigured) ...[
           const SizedBox(height: 6),
           Row(
             children: [
               const Icon(Icons.account_balance_wallet,
-                  size: 16, color: Colors.amberAccent),
+                  size: 16, color: habsRed),
               const SizedBox(width: 6),
               Text(
                 'Bankroll ${formatMoney(store.currentBankroll, currency)}',
                 style: const TextStyle(
-                    color: Colors.amberAccent,
+                    color: habsBlue,
                     fontWeight: FontWeight.w600),
               ),
             ],
@@ -1097,7 +1101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: const Icon(Icons.play_circle_fill),
             label: const Text('Start live session'),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.green.shade700,
+              backgroundColor: habsRed,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
@@ -1191,21 +1195,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: formatMoney(stats.hourly, currency),
                 icon: Icons.trending_up,
                 valueColor: stats.hourly >= 0
-                    ? Colors.greenAccent
-                    : Colors.redAccent),
+                    ? habsBlue
+                    : habsRed),
             _StatCard(
                 label: 'Best session',
                 value:
                     stats.count == 0 ? '—' : formatMoney(stats.best, currency),
                 icon: Icons.arrow_circle_up,
-                valueColor: Colors.greenAccent),
+                valueColor: habsBlue),
             _StatCard(
                 label: 'Worst session',
                 value: stats.count == 0
                     ? '—'
                     : formatMoney(stats.worst, currency),
                 icon: Icons.arrow_circle_down,
-                valueColor: Colors.redAccent),
+                valueColor: habsRed),
           ],
         ),
         if (store.sessions.isEmpty)
@@ -1214,7 +1218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Text(
               'No sessions logged yet.\nStart a live session or tap + to add one.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white54),
+              style: TextStyle(color: Colors.black45),
             ),
           ),
       ],
@@ -1235,10 +1239,10 @@ class _GoalProgress extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('Monthly goal',
-                style: TextStyle(color: Colors.white70, fontSize: 13)),
+                style: TextStyle(color: Colors.black54, fontSize: 13)),
             Text(
               '${formatMoney(profit, store.currency)} / ${formatMoney(goal, store.currency)}',
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: const TextStyle(color: Colors.black54, fontSize: 13),
             ),
           ],
         ),
@@ -1248,9 +1252,9 @@ class _GoalProgress extends StatelessWidget {
           child: LinearProgressIndicator(
             value: pct,
             minHeight: 10,
-            backgroundColor: Colors.white12,
+            backgroundColor: Colors.black12,
             valueColor: AlwaysStoppedAnimation<Color>(
-                profit >= 0 ? Colors.greenAccent : Colors.redAccent),
+                profit >= 0 ? habsBlue : habsRed),
           ),
         ),
       ],
@@ -1289,7 +1293,7 @@ class _LiveBannerState extends State<_LiveBanner> {
     final elapsed = live.elapsed(DateTime.now());
     final profit = live.liveProfit;
     return Card(
-      color: Colors.green.shade900,
+      color: habsRed,
       child: InkWell(
         onTap: () => Navigator.push(
           context,
@@ -1300,7 +1304,7 @@ class _LiveBannerState extends State<_LiveBanner> {
           child: Row(
             children: [
               const Icon(Icons.fiber_manual_record,
-                  color: Colors.redAccent, size: 16),
+                  color: Colors.white, size: 16),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1309,7 +1313,9 @@ class _LiveBannerState extends State<_LiveBanner> {
                     Text(
                       'LIVE · ${live.game}${live.stakes.isNotEmpty ? ' ${live.stakes}' : ''}'
                       '${live.location.isNotEmpty ? ' · ${live.location}' : ''}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1322,12 +1328,10 @@ class _LiveBannerState extends State<_LiveBanner> {
               ),
               Text(
                 formatMoney(profit, store.currency),
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: profit >= 0
-                      ? Colors.greenAccent
-                      : Colors.redAccent,
+                  color: Colors.white,
                 ),
               ),
               const Icon(Icons.chevron_right, color: Colors.white54),
@@ -1363,11 +1367,11 @@ class _StatCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, size: 16, color: Colors.white54),
+                Icon(icon, size: 16, color: Colors.black45),
                 const SizedBox(width: 6),
                 Text(label,
                     style: const TextStyle(
-                        color: Colors.white60, fontSize: 12)),
+                        color: Colors.black54, fontSize: 12)),
               ],
             ),
             const SizedBox(height: 6),
@@ -1379,7 +1383,7 @@ class _StatCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: valueColor ?? Colors.white,
+                  color: valueColor ?? habsBlue,
                 ),
               ),
             ),
@@ -1403,7 +1407,7 @@ class StatsScreen extends StatelessWidget {
         child: Text(
           'No sessions yet — stats will appear here\nonce you log some games.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white54),
+          style: TextStyle(color: Colors.black45),
         ),
       );
     }
@@ -1429,20 +1433,20 @@ class StatsScreen extends StatelessWidget {
                       ? '—'
                       : '$streakKind$streakCount',
                   color: streakKind == 'W'
-                      ? Colors.greenAccent
+                      ? habsBlue
                       : (streakKind == 'L'
-                          ? Colors.redAccent
-                          : Colors.white),
+                          ? habsRed
+                          : Colors.black87),
                 ),
                 _StreakStat(
                   label: 'Longest win streak',
                   value: '${longestWinStreak(sessions)}',
-                  color: Colors.greenAccent,
+                  color: habsBlue,
                 ),
                 _StreakStat(
                   label: 'Total sessions',
                   value: '${sessions.length}',
-                  color: Colors.white,
+                  color: Colors.black87,
                 ),
               ],
             ),
@@ -1461,7 +1465,7 @@ class StatsScreen extends StatelessWidget {
         const Text(
           'Find your most profitable game, room and day — '
           'then play more of those.',
-          style: TextStyle(color: Colors.white38, fontSize: 12),
+          style: TextStyle(color: Colors.black38, fontSize: 12),
           textAlign: TextAlign.center,
         ),
       ],
@@ -1485,7 +1489,7 @@ class _StreakStat extends StatelessWidget {
                 fontSize: 24, fontWeight: FontWeight.bold, color: color)),
         const SizedBox(height: 2),
         Text(label,
-            style: const TextStyle(color: Colors.white60, fontSize: 12)),
+            style: const TextStyle(color: Colors.black54, fontSize: 12)),
       ],
     );
   }
@@ -1522,8 +1526,8 @@ class _BreakdownSection extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: r.profit >= 0
-                          ? Colors.greenAccent
-                          : Colors.redAccent,
+                          ? habsBlue
+                          : habsRed,
                     ),
                   ),
                 )),
@@ -1600,7 +1604,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
               ? const Center(
                   child: Text(
                     'No sessions match.',
-                    style: TextStyle(color: Colors.white54),
+                    style: TextStyle(color: Colors.black45),
                   ),
                 )
               : ListView.builder(
@@ -1608,8 +1612,8 @@ class _SessionsScreenState extends State<SessionsScreen> {
                   itemBuilder: (context, i) {
                     final s = sessions[i];
                     final profitColor = s.profit >= 0
-                        ? Colors.greenAccent
-                        : Colors.redAccent;
+                        ? habsBlue
+                        : habsRed;
                     return Dismissible(
                       key: ValueKey(s.id),
                       direction: DismissDirection.endToStart,
@@ -1687,7 +1691,7 @@ class SessionDetailScreen extends StatelessWidget {
     final s = session;
     final currency = store.currency;
     final profitColor =
-        s.profit >= 0 ? Colors.greenAccent : Colors.redAccent;
+        s.profit >= 0 ? habsBlue : habsRed;
     final sessionHourly = s.hours > 0 ? s.profit / s.hours : null;
 
     Widget row(String label, String value, {Color? color}) {
@@ -1696,7 +1700,7 @@ class SessionDetailScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white60)),
+            Text(label, style: const TextStyle(color: Colors.black54)),
             Text(value,
                 style: TextStyle(
                     fontWeight: FontWeight.w600, color: color)),
@@ -1763,7 +1767,7 @@ class SessionDetailScreen extends StatelessWidget {
                 ),
                 Text(
                   '${s.game}${s.stakes.isNotEmpty ? ' · ${s.stakes}' : ''} · ${formatDate(s.date)}',
-                  style: const TextStyle(color: Colors.white60),
+                  style: const TextStyle(color: Colors.black54),
                 ),
               ],
             ),
@@ -1904,7 +1908,7 @@ class _SessionFormScreenState extends State<SessionFormScreen> {
   @override
   Widget build(BuildContext context) {
     final profit = _previewProfit;
-    final profitColor = profit >= 0 ? Colors.greenAccent : Colors.redAccent;
+    final profitColor = profit >= 0 ? habsBlue : habsRed;
     return Scaffold(
       appBar: AppBar(
         title:
@@ -2120,7 +2124,7 @@ class _LiveSetupScreenState extends State<LiveSetupScreen> {
           const Text(
             'Set up your session, then hit start — the clock runs '
             'until you end it, even if you close the app.',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: Colors.black54),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -2169,7 +2173,7 @@ class _LiveSetupScreenState extends State<LiveSetupScreen> {
             icon: const Icon(Icons.play_arrow),
             label: const Text('Start the clock'),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.green.shade700,
+              backgroundColor: habsRed,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
@@ -2349,7 +2353,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
         appBar: AppBar(title: const Text('Live session')),
         body: const Center(
           child: Text('No live session running.',
-              style: TextStyle(color: Colors.white54)),
+              style: TextStyle(color: Colors.black45)),
         ),
       );
     }
@@ -2357,7 +2361,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
     final elapsed = live.elapsed(now);
     final breakTime = live.totalBreak(now);
     final profit = live.liveProfit;
-    final profitColor = profit >= 0 ? Colors.greenAccent : Colors.redAccent;
+    final profitColor = profit >= 0 ? habsBlue : habsRed;
 
     return Scaffold(
       appBar: AppBar(
@@ -2380,14 +2384,14 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Icons.fiber_manual_record,
-                        color: Colors.redAccent, size: 14),
+                        color: habsRed, size: 14),
                     const SizedBox(width: 8),
                     Text(
                       live.onBreak ? 'ON BREAK' : 'PLAYING',
                       style: TextStyle(
                         color: live.onBreak
                             ? Colors.amberAccent
-                            : Colors.greenAccent,
+                            : habsBlue,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
                       ),
@@ -2406,13 +2410,13 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
                 Text(
                   'time at the table'
                   '${breakTime.inSeconds > 0 ? ' · breaks ${formatDuration(breakTime)}' : ''}',
-                  style: const TextStyle(color: Colors.white60),
+                  style: const TextStyle(color: Colors.black54),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${live.game}${live.stakes.isNotEmpty ? ' · ${live.stakes}' : ''}'
                   '${live.location.isNotEmpty ? ' · ${live.location}' : ''}',
-                  style: const TextStyle(color: Colors.white70),
+                  style: const TextStyle(color: Colors.black54),
                 ),
               ],
             ),
@@ -2427,7 +2431,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Current stack',
-                          style: TextStyle(color: Colors.white60)),
+                          style: TextStyle(color: Colors.black54)),
                       Text(
                         formatMoney(live.currentStack, store.currency),
                         style: const TextStyle(
@@ -2440,7 +2444,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Running result',
-                          style: TextStyle(color: Colors.white60)),
+                          style: TextStyle(color: Colors.black54)),
                       Text(
                         formatMoney(profit, store.currency),
                         style: TextStyle(
@@ -2457,7 +2461,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
                     children: [
                       Text(
                           'Total buy-in${live.rebuys > 0 ? ' (${live.rebuys} rebuys)' : ''}',
-                          style: const TextStyle(color: Colors.white60)),
+                          style: const TextStyle(color: Colors.black54)),
                       Text(formatMoney(live.buyIn, store.currency)),
                     ],
                   ),
@@ -2505,7 +2509,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
             label: Text(live.onBreak ? 'Resume play' : 'Take a break'),
             style: OutlinedButton.styleFrom(
               foregroundColor:
-                  live.onBreak ? Colors.amberAccent : Colors.white70,
+                  live.onBreak ? Colors.amberAccent : Colors.black54,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
@@ -2524,7 +2528,7 @@ class _LiveSessionScreenState extends State<LiveSessionScreen> {
             'Ending saves the session with your playing time '
             'filled in automatically.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white38, fontSize: 12),
+            style: TextStyle(color: Colors.black38, fontSize: 12),
           ),
         ],
       ),
@@ -2772,7 +2776,7 @@ class SettingsScreen extends StatelessWidget {
           store.bankrollConfigured
               ? 'Current bankroll: ${formatMoney(store.currentBankroll, currency)}'
               : 'Set a starting bankroll to track deposits and withdrawals.',
-          style: const TextStyle(color: Colors.white60),
+          style: const TextStyle(color: Colors.black54),
         ),
         const SizedBox(height: 8),
         ListTile(
@@ -2814,8 +2818,8 @@ class SettingsScreen extends StatelessWidget {
               leading: Icon(
                 t.amount >= 0 ? Icons.add_circle : Icons.remove_circle,
                 color: t.amount >= 0
-                    ? Colors.greenAccent
-                    : Colors.redAccent,
+                    ? habsBlue
+                    : habsRed,
                 size: 20,
               ),
               title: Text(
@@ -2902,9 +2906,9 @@ class SettingsScreen extends StatelessWidget {
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.delete_forever, color: Colors.redAccent),
+          leading: const Icon(Icons.delete_forever, color: habsRed),
           title: const Text('Delete all sessions',
-              style: TextStyle(color: Colors.redAccent)),
+              style: TextStyle(color: habsRed)),
           onTap: () async {
             final ok = await showDialog<bool>(
                   context: context,
@@ -2930,7 +2934,7 @@ class SettingsScreen extends StatelessWidget {
         const Text(
           'Poker Results v1.1 — data is stored only on this phone. '
           'Export a JSON backup regularly so you never lose your results.',
-          style: TextStyle(color: Colors.white54, fontSize: 12),
+          style: TextStyle(color: Colors.black45, fontSize: 12),
         ),
       ],
     );
@@ -2949,8 +2953,22 @@ class PokerResultsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          brightness: Brightness.dark,
+          seedColor: habsRed,
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: habsBlue,
+          foregroundColor: Colors.white,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: habsRed,
+          foregroundColor: Colors.white,
+        ),
+        cardTheme: const CardThemeData(
+          color: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          elevation: 1,
         ),
         useMaterial3: true,
       ),
@@ -3015,6 +3033,9 @@ class _RootScreenState extends State<RootScreen> {
             currentIndex: _tab,
             onTap: (i) => setState(() => _tab = i),
             type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: habsRed,
+            unselectedItemColor: Colors.black45,
             items: const [
               BottomNavigationBarItem(
                   icon: Icon(Icons.show_chart), label: 'Dashboard'),

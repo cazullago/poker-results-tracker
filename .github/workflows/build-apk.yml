@@ -45,13 +45,13 @@ jobs:
         run: flutter build apk --debug
 
       - name: Rename APK
-        run: cp build/app/outputs/flutter-apk/app-debug.apk PokerResults-v1.1.0-debug.apk
+        run: cp build/app/outputs/flutter-apk/app-debug.apk PokerResults-v1.2.0-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: PokerResults-v1.1.0-debug.apk
+          path: PokerResults-v1.2.0-debug.apk
           if-no-files-found: error
 
       - name: Publish release (tag builds only)
@@ -59,10 +59,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: >-
-            Android test build. New in v1.1: live sessions with timer, breaks
-            and rebuys, Stats tab, bankroll tracking, monthly goal, BB stats,
-            JSON backup. Note for v1.0 users: this build uses a different
-            signing key than v1.0, so export CSV in the old app first,
-            uninstall it, install this one, then use Settings > Import
-            sessions (CSV). Future updates install in place.
-        run: gh release create "${GITHUB_REF#refs/tags/}" PokerResults-v1.1.0-debug.apk --title "Poker Results ${GITHUB_REF#refs/tags/}" --notes "$RELEASE_NOTES"
+            Android test build. New in v1.2: Montreal Canadiens theme
+            (navy, white and red; wins in blue, losses in red). Same
+            features as v1.1: live sessions, Stats tab, bankroll, goals.
+            Installs over v1.1 and keeps your data.
+        run: gh release create "${GITHUB_REF#refs/tags/}" PokerResults-v1.2.0-debug.apk --title "Poker Results ${GITHUB_REF#refs/tags/}" --notes "$RELEASE_NOTES"
